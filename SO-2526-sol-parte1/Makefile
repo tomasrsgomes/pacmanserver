@@ -1,7 +1,7 @@
 # Compiler variables
 CC = gcc
 CFLAGS = -g -Wall -Wextra -Werror -std=c17 -D_POSIX_C_SOURCE=200809L
-LDFLAGS = -lncurses
+LDFLAGS = -pthread
 
 # Directory variables
 SRC_DIR = src
@@ -13,10 +13,10 @@ INCLUDE_DIR = include
 TARGET = Pacmanist
 
 # Objects variables
-OBJS = game.o display.o board.o parser.o
+OBJS = game.o board.o parser.o display.o
 
 # Dependencies
-display.o = display.h
+# display.o = display.h
 board.o = board.h
 parser.o = parser.h
 

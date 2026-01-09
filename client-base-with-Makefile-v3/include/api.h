@@ -20,4 +20,6 @@ int pacman_disconnect();
 
 Board receive_board_update(void);
 
+Board receive_board_update(void);
+
 #endif

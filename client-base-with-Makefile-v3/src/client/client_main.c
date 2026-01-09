@@ -88,60 +88,39 @@ int main(int argc, char *argv[]) {
     draw_board_client(board);
     refresh_screen();
 
-    char command;
-    int ch;
-
     while (1) {
 
         pthread_mutex_lock(&mutex);
-        if (stop_execution)
+        if (stop_execution) {
             pthread_mutex_unlock(&mutex);
             break;
+        }
         pthread_mutex_unlock(&mutex);
 
+        char command = 0;
         if (cmd_fp) {
-            // Input from file
-            ch = fgetc(cmd_fp);
-
-            if (ch == EOF) {
-                // Restart at the start of the file
+            int c = fgetc(cmd_fp);
+            if (c == EOF) {
                 rewind(cmd_fp);
                 continue;
             }
-
-            command = (char)ch;
-
-            if (command == '\n' || command == '\r' || command == '\0')
-                continue;
-
-            command = toupper(command);
-            
-            // Wait for tempo, to not overflow pipe with requests
-            pthread_mutex_lock(&mutex);
-            int wait_for = tempo;
-            pthread_mutex_unlock(&mutex);
-
-            sleep_ms(wait_for);
-            
+            sleep_ms(100); // 100ms
+            command = (char)c;
         } else {
-            // Interactive input
-            command = get_input();
-            command = toupper(command);
+            int c = getch();
+            if (c == ERR) continue;
+            command = (char)c;
         }
 
-        if (command == '\0')
-            continue;
+        if (isspace(command)) continue;
+        command = toupper(command);
+        if (command == 'Q') break;
 
-        if (command == 'Q') {
-            debug("Client pressed 'Q', quitting game\n");
-            break;
+        if (command) {
+            pacman_play(command);
         }
-
-        debug("Command: %c\n", command);
-
-        pacman_play(command);
-
     }
+
 
     pacman_disconnect();
 

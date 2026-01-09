@@ -6,6 +6,7 @@
 #define MAX_FILENAME 256
 #define MAX_GHOSTS 25
 
+#define _XOPEN_SOURCE 600  //TODO: understand
 #include <pthread.h>
 
 typedef enum {
