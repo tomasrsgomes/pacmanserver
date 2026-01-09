@@ -24,31 +24,36 @@ int read_level(board_t* board, char* filename, char* dirname) {
     // Pacman is optional
     board->pacman_file[0] = '\0';
     board->n_pacmans = 1;
+    board->n_ghosts = 0;
 
     strcpy(board->level_name, filename);
     *strrchr(board->level_name, '.') = '\0';
 
     int read;
+    char *saveptr;
     while ((read = read_line(fd, command)) > 0) {
 
         // comment
         if (command[0] == '#' || command[0] == '\0') continue;
 
-        char *word = strtok(command, " \t\n");
+        char temp[MAX_COMMAND_LENGTH];
+        strcpy(temp, command);
+
+        char *word = strtok_r(temp, " \t\n", &saveptr);
         if (!word) continue;  // skip empty line
 
         if (strcmp(word, "DIM") == 0) {
-            char *arg1 = strtok(NULL, " \t\n");
-            char *arg2 = strtok(NULL, " \t\n");
+            char *arg1 = strtok_r(NULL, " \t\n", &saveptr);
+            char *arg2 = strtok_r(NULL, " \t\n", &saveptr);
             if (arg1 && arg2) {
-                board->width = atoi(arg1);
-                board->height = atoi(arg2);
+                board->height = atoi(arg1);
+                board->width = atoi(arg2);
                 debug("DIM = %d x %d\n", board->width, board->height);
             }
         }
 
         else if (strcmp(word, "TEMPO") == 0) {
-            char *arg = strtok(NULL, " \t\n");
+            char *arg = strtok_r(NULL, " \t\n", &saveptr);
             if (arg) {
                 board->tempo = atoi(arg);
                 debug("TEMPO = %d\n", board->tempo);
@@ -56,7 +61,7 @@ int read_level(board_t* board, char* filename, char* dirname) {
         }
 
         else if (strcmp(word, "PAC") == 0) {
-            char *arg = strtok(NULL, " \t\n");
+            char *arg = strtok_r(NULL, " \t\n", &saveptr);
             if (arg) {
                 snprintf(board->pacman_file, sizeof(board->pacman_file), "%s/%s", dirname, arg);
                 debug("PAC = %s\n", board->pacman_file);
@@ -66,7 +71,7 @@ int read_level(board_t* board, char* filename, char* dirname) {
         else if (strcmp(word, "MON") == 0) {
             char *arg;
             int i = 0;
-            while ((arg = strtok(NULL, " \t\n")) != NULL) {
+            while ((arg = strtok_r(NULL, " \t\n", &saveptr)) != NULL) {
                 snprintf(board->ghosts_files[i], sizeof(board->ghosts_files[0]), "%s/%s", dirname, arg);
                 debug("MON file: %s\n", board->ghosts_files[i]);
                 i+= 1;
@@ -163,15 +168,19 @@ int read_pacman(board_t* board, int points) {
 
     int read;
     char command[MAX_COMMAND_LENGTH];
+    char *saveptr;
     while ((read = read_line(fd, command)) > 0) {
         // comment
         if (command[0] == '#' || command[0] == '\0') continue;
 
-        char *word = strtok(command, " \t\n");
+        char temp[MAX_COMMAND_LENGTH];
+        strcpy(temp, command);
+
+        char *word = strtok_r(temp, " \t\n", &saveptr);
         if (!word) continue;  // skip empty line
 
         if (strcmp(word, "PASSO") == 0) {
-            char *arg = strtok(NULL, " \t\n");
+            char *arg = strtok_r(NULL, " \t\n", &saveptr);
             if (arg) {
                 pacman->passo = atoi(arg);
                 pacman->waiting = pacman->passo;
@@ -179,11 +188,11 @@ int read_pacman(board_t* board, int points) {
             }
         }
         else if (strcmp(word, "POS") == 0) {
-            char *arg1 = strtok(NULL, " \t\n");
-            char *arg2 = strtok(NULL, " \t\n");
+            char *arg1 = strtok_r(NULL, " \t\n", &saveptr);
+            char *arg2 = strtok_r(NULL, " \t\n", &saveptr);
             if (arg1 && arg2) {
-                pacman->pos_x = atoi(arg1);
-                pacman->pos_y = atoi(arg2);
+                pacman->pos_y = atoi(arg1);
+                pacman->pos_x = atoi(arg2);
                 int idx = pacman->pos_y * board->width + pacman->pos_x;
                 board->board[idx].content = 'P';
                 debug("Pacman Pos = %d x %d\n", pacman->pos_x, pacman->pos_y);
@@ -244,15 +253,19 @@ int read_ghosts(board_t* board) {
 
         int read;
         char command[MAX_COMMAND_LENGTH];
+        char *saveptr;
         while ((read = read_line(fd, command)) > 0) {
             // comment
             if (command[0] == '#' || command[0] == '\0') continue;
 
-            char *word = strtok(command, " \t\n");
+            char temp[MAX_COMMAND_LENGTH];
+            strcpy(temp, command);
+
+            char *word = strtok_r(temp, " \t\n", &saveptr);
             if (!word) continue;  // skip empty line
 
             if (strcmp(word, "PASSO") == 0) {
-                char *arg = strtok(NULL, " \t\n");
+                char *arg = strtok_r(NULL, " \t\n", &saveptr);
                 if (arg) {
                     ghost->passo = atoi(arg);
                     ghost->waiting = ghost->passo;
@@ -260,11 +273,11 @@ int read_ghosts(board_t* board) {
                 }
             }
             else if (strcmp(word, "POS") == 0) {
-                char *arg1 = strtok(NULL, " \t\n");
-                char *arg2 = strtok(NULL, " \t\n");
+                char *arg1 = strtok_r(NULL, " \t\n", &saveptr);
+                char *arg2 = strtok_r(NULL, " \t\n", &saveptr);
                 if (arg1 && arg2) {
-                    ghost->pos_x = atoi(arg1);
-                    ghost->pos_y = atoi(arg2);
+                    ghost->pos_y = atoi(arg1);
+                    ghost->pos_x = atoi(arg2);
                     int idx = ghost->pos_y * board->width + ghost->pos_x;
                     board->board[idx].content = 'M';
                     debug("Ghost Pos = %d x %d\n", ghost->pos_x, ghost->pos_y);
@@ -331,5 +344,5 @@ int read_line(int fd, char *buf) {
     buf[i] = '\0';
     if (n == -1) return -1;
     if (n == 0 && i == 0) return 0;
-    return i;                         
+    return 1;
 }
